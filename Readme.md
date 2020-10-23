@@ -1,0 +1,23 @@
+### Shamir scheme
+You cant use odd numbers in key
+For split test, used key 
+044f043b044e0431043b044e043f04380442044c043f04380432043e04450434
+as field modulo number i used simple number 
+fffffffff44e0431043b044e043f04380442044c043f04380432043e044505fb
+
+c07dafa4077080fed4ce3a6a5badf38d0dc8fc0610b92c7f32c04459dc9c7
+17cf55ce78b5f55605094d4712da4a2a0dd9b7783e1408bb606ee5336e7154
+source: https://ru.numberempire.com/primenumbers.php
+
+for restore private key, use any 3 keys(or more, I guess. They should lie on the same curve):
+1k15c6ac8223efea281b67263f21b8e4c4e4d948f51267d7649ee513a4b668be02
+2k3025f47e3c7e95bf9499ea48a9a4fc48a7d35815f4acff2764e2a9458dd19972
+3k536cdc2f4dfa06f76fd3506a9c034ac34d3031aeab0e7b80562ac5208a7f9684
+4k7f9b639558623dcfad1358a4f8d3d034d4efd5bf358c4c6f72bd6735ac72b538
+5kb4b18ab05bb73a484c5a02f7c0168c9d3f124447942671f4ba9a8f84f3aaf58e
+6kf2af518057f8fc614da74f62f1cb7ffc8b977d47c6dcec102dc23e0e60285786
+7k3994b80558d97fe9acc0399889b3a61ab63d7c73c970b689c8026e93eda5d525
+8k8961be3f46f4cd43721aca34904d0767c7884a63a45fd9d191bf2991a4ad7a61
+9ke216642e2dfce03d997bfce901589fabbb35e2cb536b51af86c66ac980fa413f
+10k43b2a9d219a3b4a71ea8cd67d8976aae8d04415ed25419eba2e62dfd7e4723c4
+Note, that the number before char 'k' represents number of key, and also X coordinate of point
