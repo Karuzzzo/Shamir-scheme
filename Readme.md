@@ -1,5 +1,5 @@
 # Shamir scheme
-this is an algorithm for implementing key separation using the Shamir scheme. 
+This is an algorithm for implementing key separation using the Shamir scheme. 
 
 ### Installation and launch
 To launch program, you need to download folder, cd to it, and run with one of possible parameters:
@@ -23,12 +23,10 @@ $ cargo run main.rs recover
 After selecting a recover mode, you will be asked to input keys, generated in split mode. You must type them, separated with enter key. After you typed all of them, press enter one more time. 
 
 >Type exact number of keys, required to restore 
->our polynomial
-
->In other case, Lagrange interpolation breaks for some reason
-
+>our polynomial.
+>In other case, Lagrange interpolation breaks for some reason. 
 >That's not my fault, Lagrange algorithm can only work with exactly k points,
->where k - 1 is degree of polynomial
+>where k - 1 is degree of polynomial.
 
 ### Tests
 
@@ -38,8 +36,9 @@ My code is not optimised, and doesnt handle most of the errors(for its simplicit
 For split test, used key with length of 64 symbols:
 044f043b044e0431043b044e043f04380442044c043f04380432043e04450434
 
-you can use any number, but not bigger than field module P.
-as field module number P, i used simple number 
+You can use any number, but not bigger than field module P.
+
+As field module number P, i used simple number:
 fffffffff44e0431043b044e043f04380442044c043f04380432043e044505fb
 
 [Generator of big simple numbers](https://ru.numberempire.com/primenumbers.php)
