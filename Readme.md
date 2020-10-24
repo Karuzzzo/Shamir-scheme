@@ -1,15 +1,51 @@
-### Shamir scheme
-You cant use odd numbers in key
-For split test, used key 
+# Shamir scheme
+this is an algorithm for implementing key separation using the Shamir scheme. 
+
+### Installation and launch
+To launch program, you need to download folder, cd to it, and run with one of possible parameters:
+
+
+ - Split mode:
+ 
+```sh
+$ cargo run main.rs split
+```
+
+After selecting a split mode, you will be asked to input key (in HEX format) to split. You can type mine, from the tests section, or type your own.  
+
+Then, type number of public keys you need, and number of keys required to restore secret.
+
+ - Recover mode:
+```sh
+$ cargo run main.rs recover
+```
+
+After selecting a recover mode, you will be asked to input keys, generated in split mode. You must type them, separated with enter key. After you typed all of them, press enter one more time. 
+
+>Type exact number of keys, required to restore 
+>our polynomial
+
+>In other case, Lagrange interpolation breaks for some reason
+
+>That's not my fault, Lagrange algorithm can only work with exactly k points,
+>where k - 1 is degree of polynomial
+
+### Tests
+
+### Warning!
+My code is not optimised, and doesnt handle most of the errors(for its simplicity). So try not to make any mistakes in input.
+
+For split test, used key with length of 64 symbols:
 044f043b044e0431043b044e043f04380442044c043f04380432043e04450434
-as field modulo number i used simple number 
+
+you can use any number, but not bigger than field module P.
+as field module number P, i used simple number 
 fffffffff44e0431043b044e043f04380442044c043f04380432043e044505fb
 
-c07dafa4077080fed4ce3a6a5badf38d0dc8fc0610b92c7f32c04459dc9c7
-17cf55ce78b5f55605094d4712da4a2a0dd9b7783e1408bb606ee5336e7154
-source: https://ru.numberempire.com/primenumbers.php
+[Generator of big simple numbers](https://ru.numberempire.com/primenumbers.php)
 
-for restoring private key, use any 3 keys:
+output for input key listed above, total 20 random keys
+for restoring back our secret, use any 3 keys:
 1k4a6c1bfdec25186df2ed8efcb3f20d101511d13452d1879ad9e8ef0555b57328
 2k04e26ecabc23f99834f743eee1460fed5100714c94babb06daabec828de30b23
 3k33b1fca16898abe0ce932772907a1107bc4fe8e0ce39a2b40aad00f3b112d220
@@ -30,4 +66,5 @@ for restoring private key, use any 3 keys:
 18k7baef8d7754a3570ea175affc37d5dc948a9f7bf48cdc3ef10b5041bf6872f00
 19kf012374c3af9dc47df39097972f8252e8c38c8feddeed22717396a19abf6bc40
 20kd8ceb0cae8d1500c27b1e236a013e698fae66d6e6666906848c9e2cd48237287
+
 Note, that the number before char 'k' represents number of key, and also X coordinate of point
