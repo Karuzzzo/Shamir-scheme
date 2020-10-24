@@ -1,3 +1,4 @@
+#![allow(unused_assignments)]
 use std::env;
 use std::io;
 use std::io::Write;
@@ -5,6 +6,7 @@ extern crate bigint;
 use bigint::uint::U256;
 //this is needed for calculating and containing powers, before modulation
 use bigint::uint::U512;
+
 //our X coordinate doesnt need to be big, it lies in range 1..100, 
 //and also represent number of key
 struct Point{       
@@ -127,7 +129,6 @@ fn generate_koeffs(mut to_restore: u32) -> Vec<U256>{
         random_koeff.pop();         //cutting off EOF
 
         let output :U256 = U256::from_dec_str(&random_koeff).unwrap();     //im pretty sure there could be no errors
-        //println!("Koeff {} is {}", to_restore, output);
         koeffs.push(output);
         to_restore -= 1;
     }
@@ -153,7 +154,7 @@ fn read_recover_data()-> Vec<String>{
     println!("To restore private key, type in keys you have, one for line. When you typed all keys, press enter: ");
     io::stdout().flush().expect("error on flush");
 
-    a.push("ToRemove".to_string());     //required kostyl, or there will be panic, vector is empty
+    a.push("ToRemove".to_string());     //required kostyl, or there will be panic, cause vector is empty
     while a[a.len()-1].len() > 1 as usize{
         let mut input = String::new();
 
@@ -184,33 +185,65 @@ fn parse_pub_keys(str_vect: Vec<String>)-> Vec<Point>{
     out
 }
 fn interpolate(points: &Vec<Point>) -> U256{
-    let mut secret :U512 = U512::zero();
-
-    for p in points{
+    let mut nums: Vec<U256> =Vec::new(); 
+    let mut dens: Vec<U256> =Vec::new(); 
+        //we are getting all koeficcients, but we cant be sure that they are dividable,
+        // so division will be performed later
+      for p in points{
         let (num , den, neg) = multiply_lagrange(&points, p.x); //multiplying from Lagrange interpolation
-        let x: U256 = U256::from(get_mod((U512::from(p.y) * num) / den));   //sum from Lagrange interpolation
-        let a :U256 = if neg {get_opposite(x)} else {x};                    //cropping possibe negative koeffs
-
-        secret = secret + U512::from(a);
+        let (num, den)  =
+         if neg {get_opposite_fraction(num, den)}
+         else {(U512::from(num), U512::from(den))};    //cropping possibe negative koeffs
+        nums.push(get_mod(get_mod(num).full_mul(p.y)));  //multiplying, guaranteed no overflow
+        dens.push(get_mod(den));
     }
-    get_mod(secret)
+    let mut full_num:U256 = U256::zero();
+    let mut full_den:U256 = U256::zero();
+
+    let mut counter:usize = 0;
+    while counter < nums.len(){     
+        let a = U512::from(full_num) + (U512::from(nums[counter]) * U512::from(get_multiplicator(counter, &dens)));
+        full_num = get_mod(a);
+        counter+=1;
+    }
+    full_den = get_multiplicator(9999, &dens);
+    if full_num % full_den != U256::zero(){ //I dont know why this is happening sometimes, they MUST interpolate backwards, but they dont
+        println!("fucking numbers doesnt divide fully.\r
+        I spend about three days trying to fix this.\r
+        All I can say - try another numbers");
+        panic!("Non-integer division, data is lost, try another keys");
+    }
+    full_num / full_den     
+}
+
+fn get_multiplicator(skip_number:usize, dens:&Vec<U256>)-> U256{
+    let mut out:U512 = U512::one();
+    let mut counter:i32= -1;
+
+    while counter < dens.len() as i32{     
+        counter+=1;
+        if (counter as usize == skip_number) || (counter as usize == dens.len()) {continue;}
+        out = out * U512::from(dens[counter as usize]);
+    }
+    get_mod(out)
 }
 //from here we get num and den. We cant divide them here, 
 //cause we will lose data if result of division is not integer 
 //also, to avoid negative numbers, we must send flag if result is negative,
 //and take opposite value in finite field later
-fn multiply_lagrange(points: &Vec<Point>, current_number:u32)->(U512, U512, bool){
-    let mut numerator :i32 = 1;
-    let mut denominator :i32 = 1;
+fn multiply_lagrange(points: &Vec<Point>, current_number:u32)->(u32, u32, bool){
+    let mut numerator :i64 = 1;
+    let mut denominator :i64 = 1;
 
     for p in points{
         if p.x == current_number {continue;}
-        numerator = numerator * (0 as i32 - p.x as i32);
-        denominator = denominator * (current_number as i32 - p.x as i32);
+        numerator = numerator * (0 as i64- p.x as i64);
+        denominator = denominator * (current_number.to_owned() as i64 - p.x as i64);
     }
 
     let neg: bool = 
     if (denominator < 0) || (numerator < 0){        //if num or den negative, we setting the flag
+
         if (denominator < 0) && (numerator < 0) {   //if both negative, summary its positive, flag false
             denominator = denominator.abs();
             numerator = numerator.abs();
@@ -222,7 +255,7 @@ fn multiply_lagrange(points: &Vec<Point>, current_number:u32)->(U512, U512, bool
         }
     } else {false};
 
-    (U512::from(numerator), U512::from(denominator), neg)
+    (numerator as u32, denominator as u32, neg)
 }
 
 //down here is 4 functions, I used in all code, not in exact mode.
@@ -261,10 +294,12 @@ fn get_mod(input :U512)-> U256{
     out
 }
 
-fn get_opposite(input :U256)-> U256{
+fn get_opposite_fraction(num: u32, den:u32)-> (U512, U512){
     //setting finite field 
     let s :String = "fffffffff44e0431043b044e043f04380442044c043f04380432043e044505fb".to_string();
-    let modulo :U256 = decode_from_hexstr_to_u256(s);
-    //returning cropped input
-    U256::from(modulo - input)
+    let den512 = U512::from(den);
+    let multiplication :U512 = den512 * U512::from(decode_from_hexstr_to_u256(s));
+    let m = multiplication - U512::from(num);
+    //we make numerator (if its negative) opposite on finite field
+    (m, den512)
 }
